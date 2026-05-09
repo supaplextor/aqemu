@@ -5782,6 +5782,7 @@ QStringList Virtual_Machine::Build_QEMU_Args()
 			for( int nc = 0; nc < Network_Cards_Nativ.count(); nc++ )
 			{
 				QString nic_str = "";
+				bool use_netdev_device_pair = false;
 				bool u_vlan, u_macaddr, u_model, u_name, u_hostname, u_port_dev, u_fd, u_ifname, u_script,
 					 u_downscript, u_bridge, u_helper, u_listen, u_connect, u_mcast, u_sock, u_port, u_group,
 					 u_mode, u_file, u_len, u_addr, u_vectors, u_net, u_host, u_restrict, u_dhcpstart, u_dns,
@@ -5809,6 +5810,13 @@ QStringList Virtual_Machine::Build_QEMU_Args()
 						nic_str += "user";
 						u_vlan = u_name = u_net = u_host = u_restrict = u_hostname = u_dhcpstart = u_dns =
 							     u_tftp = u_bootfile = u_hostfwd = u_guestfwd = u_smb = u_smbserver = true;
+						break;
+
+					// -net bridge[,br=bridge][,helper=helper]
+                    case VM::Net_Mode_Native_Bridge:
+						nic_str += "bridge";
+						use_netdev_device_pair = true;
+						u_bridge = u_helper = true;
 						break;
 						
 					// -net channel,port:dev
@@ -6027,8 +6035,29 @@ QStringList Virtual_Machine::Build_QEMU_Args()
 					nic_str += ",vhostfd=" + QString::number( Network_Cards_Nativ[nc].Get_VHostFd() );
 				
 				// Add to Args
-				Args << "-net";
-				Args << nic_str;
+				if( use_netdev_device_pair )
+				{
+					QString netdev_id = QString( "net%1" ).arg( nc );
+					QString netdev_str = nic_str + ",id=" + netdev_id;
+
+					QString device_model = Network_Cards_Nativ[nc].Get_Card_Model();
+					if( device_model.isEmpty() || device_model == "virtio" )
+						device_model = "virtio-net-pci";
+
+					QString device_str = device_model + ",netdev=" + netdev_id;
+					if( Network_Cards_Nativ[nc].Use_MAC_Address() && !Network_Cards_Nativ[nc].Get_MAC_Address().isEmpty() )
+						device_str += ",mac=" + Network_Cards_Nativ[nc].Get_MAC_Address();
+
+					Args << "-netdev";
+					Args << netdev_str;
+					Args << "-device";
+					Args << device_str;
+				}
+				else
+				{
+					Args << "-net";
+					Args << nic_str;
+				}
 			}
 		}
 		else
