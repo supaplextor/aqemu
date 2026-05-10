@@ -5782,6 +5782,7 @@ QStringList Virtual_Machine::Build_QEMU_Args()
 			for( int nc = 0; nc < Network_Cards_Nativ.count(); nc++ )
 			{
 				QString nic_str = "";
+				const bool allow_legacy_net_name = false;
 				bool use_netdev_device_pair = false;
 				bool u_vlan, u_macaddr, u_model, u_name, u_hostname, u_port_dev, u_fd, u_ifname, u_script,
 					 u_downscript, u_bridge, u_helper, u_listen, u_connect, u_mcast, u_sock, u_port, u_group,
@@ -5800,7 +5801,7 @@ QStringList Virtual_Machine::Build_QEMU_Args()
 					// -net nic[,vlan=n][,macaddr=mac][,model=type][,name=str][,addr=str][,vectors=v]
                     case VM::Net_Mode_Native_NIC:
 						nic_str += "nic";
-						u_vlan = u_macaddr = u_model = u_name = u_addr = u_vectors = true;
+						u_vlan = u_macaddr = u_model = u_addr = u_vectors = true;
 						break;
 						
 					// -net user[,vlan=n][,name=str][,net=addr[/mask]][,host=addr][,restrict=y|n]
@@ -5873,7 +5874,7 @@ QStringList Virtual_Machine::Build_QEMU_Args()
 				if( Network_Cards_Nativ[ nc ].Get_Card_Model().isEmpty() == false && u_model )
 					nic_str += ",model=" + Network_Cards_Nativ[ nc ].Get_Card_Model();
 				
-				if( Network_Cards_Nativ[nc].Use_Name() && u_name && Current_Emulator_Devices.PSO_Net_name )
+				if( allow_legacy_net_name && Network_Cards_Nativ[nc].Use_Name() && u_name && Current_Emulator_Devices.PSO_Net_name )
 					nic_str += ",name=\"" + Network_Cards_Nativ[ nc ].Get_Name() + "\"";
 				
 				if( Network_Cards_Nativ[nc].Use_Hostname() && u_hostname )
