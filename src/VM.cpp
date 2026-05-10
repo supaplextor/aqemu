@@ -5981,7 +5981,7 @@ QStringList Virtual_Machine::Build_QEMU_Args()
 					nic_str += ",host=" + Network_Cards_Nativ[ nc ].Get_Host();
 				
 				if( Network_Cards_Nativ[nc].Use_Restrict() && u_restrict && Current_Emulator_Devices.PSO_Net_restrict )
-					nic_str += ",restrict=" + Network_Cards_Nativ[nc].Get_Restrict() ? "y" : "n";
+					nic_str += ",restrict=" + QString(Network_Cards_Nativ[nc].Get_Restrict() ? "y" : "n");
 				
 				if( Network_Cards_Nativ[nc].Use_DHCPstart() && u_dhcpstart && Current_Emulator_Devices.PSO_Net_dhcpstart )
 					nic_str += ",dhcpstart=" + Network_Cards_Nativ[ nc ].Get_DHCPstart();
@@ -6026,10 +6026,10 @@ QStringList Virtual_Machine::Build_QEMU_Args()
 					nic_str += ",sndbuf=" + QString::number( Network_Cards_Nativ[nc].Get_Sndbuf() );
 				
 				if( Network_Cards_Nativ[nc].Use_VNet_hdr() && u_vnet_hdr && Current_Emulator_Devices.PSO_Net_vnet_hdr )
-					nic_str += ",vnet_hdr=" + Network_Cards_Nativ[ nc ].Get_VNet_hdr() ? "on" : "off";
+					nic_str += ",vnet_hdr=" + QString(Network_Cards_Nativ[ nc ].Get_VNet_hdr() ? "on" : "off");
 				
-				if( Network_Cards_Nativ[nc].Get_VHost() && u_vhost && Current_Emulator_Devices.PSO_Net_vhost )
-					nic_str += ",vhost=" + Network_Cards_Nativ[ nc ].Get_VHost() ? "on" : "off";
+				if( Network_Cards_Nativ[nc].Use_VHost() && u_vhost && Current_Emulator_Devices.PSO_Net_vhost )
+					nic_str += ",vhost=" + QString(Network_Cards_Nativ[ nc ].Get_VHost() ? "on" : "off");
 				
 				if( Network_Cards_Nativ[nc].Use_VHostFd() && u_vhostfd && Current_Emulator_Devices.PSO_Net_vhostfd )
 					nic_str += ",vhostfd=" + QString::number( Network_Cards_Nativ[nc].Get_VHostFd() );
