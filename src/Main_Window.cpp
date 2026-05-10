@@ -3302,14 +3302,8 @@ void Main_Window::on_actionPower_On_triggered()
 
 	if( ! Boot_Is_Correct(cur_vm) ) return;
 
-	if( ! AQEMU_Service::get().call( "start" , cur_vm ) )
-	{
-		AQWarning( "void Main_Window::on_action_Power_On_triggered()",
-				   "DBus start call failed, trying direct VM start." );
-
-		if( ! cur_vm->Start() )
-			AQError( "void Main_Window::on_action_Power_On_triggered()", "Cannot Start VM!" );
-	}
+    if( ! AQEMU_Service::get().call( "start" , cur_vm ) )
+        AQError( "void Main_Window::on_action_Power_On_triggered()", "Cannot Start VM!" );
 }
 
 void Main_Window::on_actionSave_triggered()

@@ -9973,6 +9973,10 @@ QString Virtual_Machine::GenerateHTMLInfoText(int info_mode)
                             con_mode = tr( "Channel" );
                             break;
 
+                        case VM::Net_Mode_Native_Bridge:
+                            con_mode = tr( "Bridge" );
+                            break;
+
                         case VM::Net_Mode_Native_TAP:
                             con_mode = tr( "TAP" );
                             break;
