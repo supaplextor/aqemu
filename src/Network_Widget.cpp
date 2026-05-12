@@ -1002,6 +1002,7 @@ void Network_Widget::on_CB_Network_Type_currentIndexChanged( int index )
 		
 		ui.Label_model->setVisible( true );
 		ui.CB_model->setVisible( true );
+		ui.CB_model->setEnabled( true );
 		
 		ui.CH_name->setVisible( true );
 		ui.Edit_name->setVisible( true );
@@ -1072,6 +1073,10 @@ void Network_Widget::on_CB_Network_Type_currentIndexChanged( int index )
 	{
 		ui.CH_vlan->setVisible( true );
 		ui.SB_vlan->setVisible( true );
+
+		ui.Label_model->setVisible( true );
+		ui.CB_model->setVisible( true );
+		ui.CB_model->setEnabled( true );
 
 		ui.CH_name->setVisible( true );
 		ui.Edit_name->setVisible( true );

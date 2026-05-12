@@ -5889,8 +5889,19 @@ QStringList Virtual_Machine::Build_QEMU_Args()
 				if( Network_Cards_Nativ[nc].Use_Interface_Name() && u_ifname && Current_Emulator_Devices.PSO_Net_ifname )
 					nic_str += ",ifname=" + Network_Cards_Nativ[ nc ].Get_Interface_Name();
 				
-				if( Network_Cards_Nativ[nc].Use_Bridge_Name() && u_bridge && Current_Emulator_Devices.PSO_Net_bridge )
-					nic_str += ",br=" + Network_Cards_Nativ[ nc ].Get_Bridge_Name();
+				const bool using_modern_netdev_bridge = use_netdev_device_pair;
+
+				if( u_bridge && (Current_Emulator_Devices.PSO_Net_bridge || using_modern_netdev_bridge) )
+				{
+					QString bridge_name = "br0";
+
+					if( Network_Cards_Nativ[nc].Use_Bridge_Name() && !Network_Cards_Nativ[ nc ].Get_Bridge_Name().isEmpty() )
+						bridge_name = Network_Cards_Nativ[ nc ].Get_Bridge_Name();
+
+					nic_str += ",br=" + bridge_name;
+					AQDebug( "QStringList Virtual_Machine::Build_QEMU_Args()",
+							 QString("Bridge net[%1] using interface %2").arg(nc).arg(bridge_name) );
+				}
 
 				if( u_script && Current_Emulator_Devices.PSO_Net_script )
 				{
@@ -5922,7 +5933,7 @@ QStringList Virtual_Machine::Build_QEMU_Args()
 						nic_str += ",downscript=" + s_downscript;
 				}
 				
-				if( u_helper && Current_Emulator_Devices.PSO_Net_helper )
+				if( u_helper && (Current_Emulator_Devices.PSO_Net_helper || using_modern_netdev_bridge) )
 				{
 					QString s_helper;
 
@@ -6048,6 +6059,9 @@ QStringList Virtual_Machine::Build_QEMU_Args()
 					QString device_str = device_model + ",netdev=" + netdev_id;
 					if( Network_Cards_Nativ[nc].Use_MAC_Address() && !Network_Cards_Nativ[nc].Get_MAC_Address().isEmpty() )
 						device_str += ",mac=" + Network_Cards_Nativ[nc].Get_MAC_Address();
+
+					AQDebug( "QStringList Virtual_Machine::Build_QEMU_Args()",
+							 QString("Using -netdev/-device pair: %1 | %2").arg(netdev_str).arg(device_str) );
 
 					Args << "-netdev";
 					Args << netdev_str;
@@ -6405,7 +6419,6 @@ QStringList Virtual_Machine::Build_QEMU_Args()
 			
 			Args << "-usb";
 			
-			if( Build_QEMU_Args_for_Tab_Info == false ) System_Info::Update_Host_USB();
 			QList<VM_USB> all_usb = System_Info::Get_All_Host_USB();
 			
 			// Add usb
