@@ -179,6 +179,9 @@ void Network_Widget::Set_Network_Card_Models( const QList<Device_Map> &models )
 
 void Network_Widget::Set_Devices( const Available_Devices &devices )
 {
+	const QString current_model = ui.CB_model->currentText();
+	const QString current_net_type = ui.CB_Network_Type->currentText();
+
 	// Set network cards models
 	if( ui.CB_model->count() > 0 ) ui.CB_model->clear();
 	if( Card_Models_QEMU_Name.count() > 0 ) Card_Models_QEMU_Name.clear();
@@ -188,6 +191,10 @@ void Network_Widget::Set_Devices( const Available_Devices &devices )
 		ui.CB_model->addItem( devices.Network_Card_List[ix].Caption );
 		Card_Models_QEMU_Name << devices.Network_Card_List[ix].QEMU_Name;
 	}
+
+	int model_index = ui.CB_model->findText( current_model );
+	if( model_index >= 0 )
+		ui.CB_model->setCurrentIndex( model_index );
 	
 	// Set types
 	ui.CB_Network_Type->clear();
@@ -201,6 +208,10 @@ void Network_Widget::Set_Devices( const Available_Devices &devices )
 	
 	if( devices.PSO_Net_type_vde ) ui.CB_Network_Type->addItem( "vde" );
 	if( devices.PSO_Net_type_dump ) ui.CB_Network_Type->addItem( "dump" );
+
+	int net_type_index = ui.CB_Network_Type->findText( current_net_type );
+	if( net_type_index >= 0 )
+		ui.CB_Network_Type->setCurrentIndex( net_type_index );
 	
 	// Set PSO
 	PSO_Net_name = devices.PSO_Net_name;
@@ -1074,6 +1085,10 @@ void Network_Widget::on_CB_Network_Type_currentIndexChanged( int index )
 		ui.CH_vlan->setVisible( true );
 		ui.SB_vlan->setVisible( true );
 
+		ui.CH_macaddr->setVisible( true );
+		ui.Edit_macaddr->setVisible( true );
+		ui.TB_Generate_New_MAC->setVisible( true );
+
 		ui.Label_model->setVisible( true );
 		ui.CB_model->setVisible( true );
 		ui.CB_model->setEnabled( true );
@@ -1462,50 +1477,31 @@ void Network_Widget::on_CH_smb_toggled( bool checked )
 VM_Net_Card_Native Network_Widget::Get_Net_Card_From_Ui() const
 {
 	VM_Net_Card_Native card;
-	
-	switch( ui.CB_Network_Type->currentIndex() )
-	{
-		case 0:
-			card.Set_Network_Type( VM::Net_Mode_Native_NIC );
-			break;
-			
-		case 1:
-			card.Set_Network_Type( VM::Net_Mode_Native_User );
-			break;
-			
-		case 2:
-			card.Set_Network_Type( VM::Net_Mode_Native_Chanel );
-			break;
-			
-		case 3:
-			card.Set_Network_Type( VM::Net_Mode_Native_Bridge );
-			break;
-			
-		case 4:
-			card.Set_Network_Type( VM::Net_Mode_Native_TAP );
-			break;
-			
-		case 5:
-			card.Set_Network_Type( VM::Net_Mode_Native_Socket );
-			break;
-			
-		case 6:
-			card.Set_Network_Type( VM::Net_Mode_Native_MulticastSocket );
-			break;
-			
-		case 7:
-			card.Set_Network_Type( VM::Net_Mode_Native_VDE );
-			break;
 
-		case 8:
-			card.Set_Network_Type( VM::Net_Mode_Native_Dump );
-			break;
-			
-		default:
-			AQError( "VM_Net_Card_Native Network_Widget::Get_Net_Card_From_Ui() const",
-					 "Cannot Read Network Type! Use Default: User Mode" );
-			card.Set_Network_Type( VM::Net_Mode_Native_User );
-			break;
+	const QString net_type = ui.CB_Network_Type->currentText();
+	if( net_type == "nic" )
+		card.Set_Network_Type( VM::Net_Mode_Native_NIC );
+	else if( net_type == "user" )
+		card.Set_Network_Type( VM::Net_Mode_Native_User );
+	else if( net_type == "channel" )
+		card.Set_Network_Type( VM::Net_Mode_Native_Chanel );
+	else if( net_type == "bridge" )
+		card.Set_Network_Type( VM::Net_Mode_Native_Bridge );
+	else if( net_type == "tap" )
+		card.Set_Network_Type( VM::Net_Mode_Native_TAP );
+	else if( net_type == "socket" )
+		card.Set_Network_Type( VM::Net_Mode_Native_Socket );
+	else if( net_type == "multicast socket" )
+		card.Set_Network_Type( VM::Net_Mode_Native_MulticastSocket );
+	else if( net_type == "vde" )
+		card.Set_Network_Type( VM::Net_Mode_Native_VDE );
+	else if( net_type == "dump" )
+		card.Set_Network_Type( VM::Net_Mode_Native_Dump );
+	else
+	{
+		AQError( "VM_Net_Card_Native Network_Widget::Get_Net_Card_From_Ui() const",
+				 "Cannot Read Network Type! Use Default: User Mode" );
+		card.Set_Network_Type( VM::Net_Mode_Native_User );
 	}
 	
     if ( ui.CB_model->currentIndex() != -1 )
@@ -1703,42 +1699,49 @@ VM_Net_Card_Native Network_Widget::Get_Net_Card_From_Ui() const
 
 void Network_Widget::Set_Net_Card_To_Ui( const VM_Net_Card_Native &card )
 {
+	auto set_network_type_text = [this]( const QString &type_text )
+	{
+		int idx = ui.CB_Network_Type->findText( type_text );
+		if( idx >= 0 )
+			ui.CB_Network_Type->setCurrentIndex( idx );
+	};
+
 	switch( card.Get_Network_Type() )
 	{
 		case VM::Net_Mode_Native_NIC:
-			ui.CB_Network_Type->setCurrentIndex( 0 );
+			set_network_type_text( "nic" );
 			break;
 			
 		case VM::Net_Mode_Native_User:
-			ui.CB_Network_Type->setCurrentIndex( 1 );
+			set_network_type_text( "user" );
 			break;
 			
 		case VM::Net_Mode_Native_Chanel:
-			ui.CB_Network_Type->setCurrentIndex( 2 );
+			set_network_type_text( "channel" );
 			break;
 			
 		case VM::Net_Mode_Native_Bridge:
-			ui.CB_Network_Type->setCurrentIndex( 3 );
+			set_network_type_text( "bridge" );
 			break;
 			
 		case VM::Net_Mode_Native_TAP:
-			ui.CB_Network_Type->setCurrentIndex( 4 );
+			set_network_type_text( "tap" );
 			break;
 			
 		case VM::Net_Mode_Native_Socket:
-			ui.CB_Network_Type->setCurrentIndex( 5 );
+			set_network_type_text( "socket" );
 			break;
 			
 		case VM::Net_Mode_Native_MulticastSocket:
-			ui.CB_Network_Type->setCurrentIndex( 6 );
+			set_network_type_text( "multicast socket" );
 			break;
 			
 		case VM::Net_Mode_Native_VDE:
-			ui.CB_Network_Type->setCurrentIndex( 7 );
+			set_network_type_text( "vde" );
 			break;
 			
 		case VM::Net_Mode_Native_Dump:
-			ui.CB_Network_Type->setCurrentIndex( 8 );
+			set_network_type_text( "dump" );
 			break;
 
 		default:
@@ -1980,7 +1983,7 @@ bool Network_Widget::Net_Card_is_Valid()
 		
 		// -net bridge[,vlan=n][,name=name][,br=bridge][,helper=helper]
 		case 3:
-			u_name = u_bridge = u_helper = true;
+			u_macaddr = u_name = u_bridge = u_helper = true;
 			break;
 		
 		// -net tap[,vlan=n][,name=name][,fd=h][,ifname=name][,script=file][,downscript=dfile][,helper=helper]
