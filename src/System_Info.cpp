@@ -2207,26 +2207,22 @@ bool System_Info::Scan_USB_Sys( QList<VM_USB> &list )
 		}
 		
 		// manufacturer
-		if( Read_SysFS_File(usb_path + "manufacturer", data) )
+		if( QFile::exists(usb_path + "manufacturer") && Read_SysFS_File(usb_path + "manufacturer", data) )
 		{
 			tmp_usb.Set_Manufacturer_Name( data );
 		}
 		else
 		{
-			AQWarning( "bool System_Info::Scan_USB_Sys( QList<VM_USB> &list )",
-					   "Cannot read manufacturer from /sys/bus/usb/devices/" );
 			tmp_usb.Set_Manufacturer_Name( "Unknown Manufacturer" );
 		}
 		
 		// product
-		if( Read_SysFS_File(usb_path + "product", data) )
+		if( QFile::exists(usb_path + "product") && Read_SysFS_File(usb_path + "product", data) )
 		{
 			tmp_usb.Set_Product_Name( data );
 		}
 		else
 		{
-			AQWarning( "bool System_Info::Scan_USB_Sys( QList<VM_USB> &list )",
-					   "Cannot read product from /sys/bus/usb/devices/" );
 			tmp_usb.Set_Product_Name( "Unknown Product" );
 		}
 		
@@ -2242,14 +2238,13 @@ bool System_Info::Scan_USB_Sys( QList<VM_USB> &list )
 		}
 		
 		// Serial Number
-		if( Read_SysFS_File(usb_path + "serial", data) )
+		if( QFile::exists(usb_path + "serial") && Read_SysFS_File(usb_path + "serial", data) )
 		{
 			tmp_usb.Set_Serial_Number( data );
 		}
 		else
 		{
-			AQWarning( "bool System_Info::Scan_USB_Sys( QList<VM_USB> &list )",
-					   "Cannot read serial from /sys/bus/usb/devices/" );
+			tmp_usb.Set_Serial_Number( "" );
 		}
 		
 		// Bus
@@ -2302,8 +2297,6 @@ bool System_Info::Read_SysFS_File( const QString &path, QString &data )
 	
 	if( ! sysfs_file.open(QIODevice::ReadOnly | QIODevice::Text) )
 	{
-		AQWarning( "bool System_Info::Read_SysFS_File( const QString &path, QString &data )",
-				   QString("Cannot Open File \"%1\"!").arg(path) );
 		return false;
 	}
 	
@@ -2313,8 +2306,6 @@ bool System_Info::Read_SysFS_File( const QString &path, QString &data )
 	
 	if( line.isEmpty() )
 	{
-		AQWarning( "bool System_Info::Read_SysFS_File( const QString &path, QString &data )",
-				   "File is Empty!" );
 		return false;
 	}
 	else
